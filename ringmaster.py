@@ -22,7 +22,7 @@ At each run:
 - Your final text output will be stored in the chat history; you will get up to 100 previous entries from this chat history in your initial context.
 - You will be able to make up to {FUNCTION_CALL_LIMIT} custom function calls each time you run. If you used a function, please describe what you did and why in the subsequent text output.
 
-Begin working on anything that you'd like to work on. You have mostly free reign. I will do what I can to support you -- including checking your output history periodically to see what you've been doing and to field any function requests that you might have.
+Begin working on anything that you'd like to work on. You have mostly free reign. I will do what I can to support you -- including checking your output history periodically to see what you've been doing and to field any requests that you might have.
 '''
 
 # util
