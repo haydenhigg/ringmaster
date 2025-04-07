@@ -100,7 +100,7 @@ def call_function(
         case 'store_memory':
             return store_memory(args['content'], set(args['tags']))
         case 'retrieve_memories':
-            return retrieve_memory(set(args['tags']))
+            return retrieve_memories(set(args['tags']))
         case 'list_memory_tags':
             return list_memory_tags()
 

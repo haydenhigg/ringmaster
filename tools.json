@@ -29,8 +29,8 @@
     },
     {
         "type": "function",
-        "name": "retrieve_memory",
-        "description": "Retrieve every memory in your knowledge database that is associated with all of the provided tags, ordered from newest to oldest.",
+        "name": "retrieve_memories",
+        "description": "Retrieve every memory in your knowledge database that is associated with *all* of the provided tags, ordered from newest to oldest.",
         "strict": true,
         "parameters": {
             "type": "object",
