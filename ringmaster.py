@@ -29,7 +29,7 @@ Begin working on anything that you'd like to work on. You have mostly free reign
 def make_timestamp() -> str:
     return datetime \
         .now(ZoneInfo('America/New_York')) \
-        .strftime('%b %-d, %Y at %-I:%-M %p %Z')
+        .strftime('%b %-d, %Y at %-I:%M %p %Z')
 
 # private
 def fetch_history(file_path: str = DB) -> list:
@@ -127,8 +127,6 @@ if __name__ == '__main__':
         tools=tools,
         input=history
     )
-
-    print(response.output_text)
 
     i = 0
     for tool_call in response.output:
