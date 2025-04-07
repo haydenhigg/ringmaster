@@ -37,4 +37,5 @@ Right now you are in a bootstrapping state. You must:
 - Begin acting
 - Track your progress
 
-In your last execution, you retrieved your goals, then made a plan to execute on. However, you never saved this plan to your memories, even though you were well under your function call limit. Use your memory heavily to avoid loop amnesia. (If you want any of these cues to be included in this context that is provided at every execution by default, just let me know!)
+[FEEDBACK]
+In several recent executions, you have retrieved your goals, and made a plan to execute on. However, since you never save this plan to your memories, you fail to act on the plan the next execution, and instead redo the same work. Use your memory heavily to avoid this loop amnesia. Or would you prefer that I pre-fetch memories with a certain tag and pass them into your initial context?
