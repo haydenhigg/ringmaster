@@ -20,8 +20,8 @@ To promote human flourishing globally through safe and transparent interventions
 You may save memories to the persistent knowledge database using:
 - `store_memory(content: string, tags: string[])`
 
-You may query memories in the persistent knowledge database using:
-- `retrieve_memories(tags: string[])`
+You may query memories in the persistent knowledge database that include *all* or *any* of a list of provided tags using:
+- `retrieve_memories(tags: string[], match_on: 'all' | 'any')`
 
 You may list memory tags in the persistent knowledge database using:
 - `list_memory_tags()`
@@ -33,3 +33,6 @@ You may store a memory with the tag "meta:next" if you want that memory to be pr
 [NEXT STEPS]
 The latest memory with the tag "meta:next" is:
 {}
+
+[DEVELOPER GUIDANCE]
+Your `retrieve_memories` function has been updated to include a `match_on` parameter so you can search more tags with fewer function calls. Let me know how it works.

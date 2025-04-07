@@ -36,26 +36,52 @@ def store_memory(content: str, tags: set[str]) -> str:
 
     return 'success'
 
-def retrieve_memories(tags: set[str]) -> str:
+def retrieve_memories(tags: set[str], match_on: str) -> str:
     connection = sqlite3.connect(DB)
     cursor = connection.cursor()
 
-    result = cursor.execute(f'''
-        SELECT
-            m.id,
-            m.time,
-            m.content,
-            GROUP_CONCAT(mt.tag) AS tags
-        FROM memories m
-        JOIN memory_tags mt ON m.id = mt.memory_id
-        WHERE mt.tag IN (''' +  ','.join('?' * len(tags)) + ''')
-        GROUP BY m.id
-        HAVING COUNT(DISTINCT mt.tag) = ?
-        ORDER BY m.id DESC
-    ''', [*tags, len(tags)])
+    tag_str = ','.join('?' * len(tags))
+
+    if match_on == 'all':
+        result = cursor.execute(f'''
+            SELECT
+                m.id,
+                m.time,
+                m.content,
+                GROUP_CONCAT(mt.tag) AS tags
+            FROM memories m
+            JOIN memory_tags mt ON m.id = mt.memory_id
+            WHERE mt.tag IN (''' +  tag_str + ''')
+            GROUP BY m.id
+            HAVING COUNT(DISTINCT mt.tag) = ?
+            ORDER BY m.id DESC
+        ''', [*tags, len(tags)])
+    else:
+        result = cursor.execute(f'''
+            SELECT
+                m.id,
+                m.time,
+                m.content,
+                GROUP_CONCAT(mt.tag) AS tags
+            FROM memories m
+            JOIN memory_tags mt ON m.id = mt.memory_id
+            WHERE EXISTS (
+                SELECT *
+                FROM memory_tags mt2
+                WHERE mt2.memory_id = m.id AND mt2.tag IN (''' + tag_str + ''')
+            )
+            GROUP BY m.id
+            ORDER BY m.id DESC
+        ''', tags)
+
     rows = result.fetchall()
 
-    memories = [{'id': r[0], 'time': r[1], 'content': r[2]} for r in rows]
+    memories = [{
+        'id': r[0],
+        'time': r[1],
+        'content': r[2],
+        'tags': r[3].split(',')
+    } for r in rows]
 
     return json.dumps(memories)
 
