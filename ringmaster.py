@@ -6,7 +6,7 @@ from openai import OpenAI
 
 # constants
 DB = 'db.sqlite'
-MODEL = 'gpt-4o-mini'
+MODEL = 'gpt-4o'
 FUNCTION_CALL_LIMIT = 10
 
 # util
