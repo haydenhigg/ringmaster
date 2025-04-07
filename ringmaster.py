@@ -8,9 +8,9 @@ from openai import OpenAI
 DB = 'history.db'
 FUNCTION_CALL_LIMIT = 5
 
-MODEL = 'gpt-4o'
-# REASONING = {'effort': 'medium'}
-# MAX_OUTPUT_TOKENS = 300
+MODEL = 'o3-mini'
+REASONING = {'effort': 'medium'}
+MAX_OUTPUT_TOKENS = 300
 INSTRUCTIONS = f'''
 You are the Ringmaster.
 
@@ -22,7 +22,7 @@ At each run:
 - Your final text output will be stored in the chat history; you will get up to 100 previous entries from this chat history in your initial context.
 - You will be able to make up to {FUNCTION_CALL_LIMIT} custom function calls each time you run. If you used a function, please describe what you did and why in the subsequent text output.
 
-Begin working on anything that you'd like to work on. You have mostly free reign. I will do what I can to support you -- I'll check your output history periodically to see what you've been doing and field any function requests from you.
+Begin working on anything that you'd like to work on. You have mostly free reign. I will do what I can to support you -- including checking your output history periodically to see what you've been doing and to field any function requests that you might have.
 '''
 
 # util
@@ -96,7 +96,7 @@ def memory_read(tags: list[str], file_path: str = DB) -> str:
     cursor = connection.cursor()
 
     result = cursor.execute('''
-        SELECT m.time, m.content
+        SELECT m.id, m.time, m.content
         FROM memory m
         WHERE EXISTS (
             SELECT 1
@@ -107,7 +107,9 @@ def memory_read(tags: list[str], file_path: str = DB) -> str:
     ''', tags)
     rows = result.fetchall()
 
-    return json.dumps([{'time': r[0], 'content': r[1]} for r in rows])
+    memories = [{'id': r[0], 'time': r[1], 'content': r[2]} for r in rows]
+
+    return json.dumps(memories)
 
 if __name__ == '__main__':
     client = OpenAI()
@@ -122,8 +124,8 @@ if __name__ == '__main__':
 
     response = client.responses.create(
         model=MODEL,
-        # reasoning=REASONING,
-        # max_output_tokens=MAX_OUTPUT_TOKENS,
+        reasoning=REASONING,
+        max_output_tokens=MAX_OUTPUT_TOKENS,
         tools=tools,
         input=history
     )
@@ -164,8 +166,8 @@ if __name__ == '__main__':
 
             response = client.responses.create(
                 model=MODEL,
-                # reasoning=REASONING,
-                # max_output_tokens=MAX_OUTPUT_TOKENS,
+                reasoning=REASONING,
+                max_output_tokens=MAX_OUTPUT_TOKENS,
                 tools=tools,
                 input=history
             )

@@ -1,0 +1,18 @@
+{
+    "name": "memory_delete",
+    "description": "Delete information from your memory by ID",
+    "strict": true,
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "id": {
+                "type": "int",
+                "description": "The ID of the memory to delete"
+            },
+        },
+        "additionalProperties": false,
+        "required": [
+            "id
+        ]
+    }
+}
