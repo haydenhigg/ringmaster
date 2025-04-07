@@ -1,5 +1,5 @@
 [
-    // {"type": "web_search_preview"},
+    {"type": "web_search_preview"},
     {
         "type": "function",
         "name": "memory_add",

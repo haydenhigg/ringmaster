@@ -8,9 +8,9 @@ from openai import OpenAI
 DB = 'history.db'
 FUNCTION_CALL_LIMIT = 5
 
-MODEL = 'o3-mini'
-REASONING = {'effort': 'medium'}
-MAX_OUTPUT_TOKENS = 300
+MODEL = 'gpt-4o'
+# REASONING = {'effort': 'medium'}
+# MAX_OUTPUT_TOKENS = 300
 INSTRUCTIONS = f'''
 You are the Ringmaster.
 
@@ -124,8 +124,8 @@ if __name__ == '__main__':
 
     response = client.responses.create(
         model=MODEL,
-        reasoning=REASONING,
-        max_output_tokens=MAX_OUTPUT_TOKENS,
+        # reasoning=REASONING,
+        # max_output_tokens=MAX_OUTPUT_TOKENS,
         tools=tools,
         input=history
     )
@@ -166,8 +166,8 @@ if __name__ == '__main__':
 
             response = client.responses.create(
                 model=MODEL,
-                reasoning=REASONING,
-                max_output_tokens=MAX_OUTPUT_TOKENS,
+                # reasoning=REASONING,
+                # max_output_tokens=MAX_OUTPUT_TOKENS,
                 tools=tools,
                 input=history
             )
