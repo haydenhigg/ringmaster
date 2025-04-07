@@ -1,0 +1,28 @@
+{
+    "name": "request_function",
+    "description": "Request a new custom function to expand your capabilities",
+    "strict": true,
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "name": {
+                "type": "string",
+                "description": "The desired function name"
+            },
+            "description": {
+                "type": "string",
+                "description": "The desired function description"
+            },
+            "use_case": {
+                "type": "string",
+                "description": "The use case for this function, including examples"
+            }
+        },
+        "additionalProperties": false,
+        "required": [
+            "name",
+            "description",
+            "use_case"
+        ]
+    }
+}

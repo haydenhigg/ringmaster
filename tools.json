@@ -1,0 +1,52 @@
+[
+    {"type": "web_search_preview"},
+    {
+        "type": "function",
+        "name": "memory_add",
+        "description": "Store information in your memory",
+        "strict": true,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "description": "The information"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "The queryable tags to associate with this information"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "content",
+                "tags"
+            ]
+        }
+    },
+    {
+        "type": "function",
+        "name": "memory_read",
+        "description": "Retrieve information from your memory by tags",
+        "strict": true,
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "The tags used to query your memory, returned rows are associated with at least 1 of these tags"
+                }
+            },
+            "additionalProperties": false,
+            "required": [
+                "tags"
+            ]
+        }
+    }
+]
