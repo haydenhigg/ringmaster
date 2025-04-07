@@ -72,7 +72,7 @@ def retrieve_memories(tags: set[str], match_on: str) -> str:
             )
             GROUP BY m.id
             ORDER BY m.id DESC
-        ''', tags)
+        ''', [*tags])
 
     rows = result.fetchall()
 
