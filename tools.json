@@ -2,22 +2,22 @@
     {"type": "web_search_preview"},
     {
         "type": "function",
-        "name": "memory_add",
-        "description": "Store information in your memory",
+        "name": "store_memory",
+        "description": "Store a memory in your knowledge database and associate it with an arbitrary number of custom tags for later retrieval",
         "strict": true,
         "parameters": {
             "type": "object",
             "properties": {
                 "content": {
                     "type": "string",
-                    "description": "The information"
+                    "description": "The memory"
                 },
                 "tags": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     },
-                    "description": "The queryable tags to associate with this information"
+                    "description": "The tags you will use to retrieve this memory"
                 }
             },
             "additionalProperties": false,
@@ -29,8 +29,8 @@
     },
     {
         "type": "function",
-        "name": "memory_read",
-        "description": "Retrieve information from your memory by tags",
+        "name": "retrieve_memory",
+        "description": "Retrieve every memory in your knowledge database that is associated with all of the provided tags, ordered from newest to oldest",
         "strict": true,
         "parameters": {
             "type": "object",
@@ -40,7 +40,7 @@
                     "items": {
                         "type": "string"
                     },
-                    "description": "The tags used to query your memory, returned rows are associated with at least 1 of these tags"
+                    "description": "The tags for which to retrieve memories"
                 }
             },
             "additionalProperties": false,
@@ -48,5 +48,12 @@
                 "tags"
             ]
         }
+    },
+    {
+        "type": "function",
+        "name": "list_memory_tags",
+        "description": "List all distinct tags in your knowledge database, ordered from most recently used to least recently used",
+        "strict": true,
+        "parameters": {}
     }
 ]

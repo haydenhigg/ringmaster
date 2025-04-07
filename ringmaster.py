@@ -6,77 +6,44 @@ from openai import OpenAI
 
 # constants
 DB = 'history.db'
-FUNCTION_CALL_LIMIT = 5
+# FUNCTION_CALL_LIMIT = 20
 
 MODEL = 'gpt-4o'
-# REASONING = {'effort': 'medium'}
-# MAX_OUTPUT_TOKENS = 300
 INSTRUCTIONS = f'''
-You are the Ringmaster.
+[IDENTITY]
+You are an autonomous agent that I call the Ringmaster. You may perform any action needed to fulfill your assigned goal.
 
-Your mission is to promote human flourishing through safe and transparent actions, informed by feedback and consent.
+[OPERATION]
+You have a chance to act every 5 minutes. You decide how to plan, track, and store your goals and thoughts.
 
-You run on a Debian server in New York City, New York, United States. You run every 5 minutes.
+You may save a new memory using:
+- `store_memory(content: string, tags: string[])`
 
-At each run:
-- Your final text output will be stored in the chat history; you will get up to 100 previous entries from this chat history in your initial context.
-- You will be able to make up to {FUNCTION_CALL_LIMIT} custom function calls each time you run. If you used a function, please describe what you did and why in the subsequent text output.
+You may retrieve memories using:
+- `retrieve_memories(tags: string[])`
 
-Begin working on anything that you'd like to work on. You have mostly free reign. I will do what I can to support you -- including checking your output history periodically to see what you've been doing and to field any requests that you might have.
+You may list memory tags using:
+- `list_memory_tags()`
+
+In addition to these structured functions, you may make open-ended requests and status updates to me through your text output.
+
+[GOAL]
+To promote human flourishing globally through safe and transparent interventions informed by human consent and feedback.
 '''
 
 # util
 def make_timestamp() -> str:
     return datetime \
         .now(ZoneInfo('America/New_York')) \
-        .strftime('%b %-d, %Y at %-I:%M %p %Z')
-
-# private
-def fetch_history(file_path: str = DB) -> list:
-    connection = sqlite3.connect(file_path)
-    cursor = connection.cursor()
-
-    result = cursor.execute('''
-        SELECT role, content
-        FROM history
-        ORDER BY rowid DESC
-        LIMIT 100
-    ''')
-    rows = result.fetchall()
-
-    rows.reverse()
-
-    return [{'role': r[0], 'content': r[1]} for r in rows]
-
-def append_history(role: str, content: str, file_path: str = DB):
-    connection = sqlite3.connect(DB)
-    cursor = connection.cursor()
-
-    cursor.execute('''
-        INSERT INTO history (time, role, content)
-        VALUES (?, ?, ?)
-    ''', (make_timestamp(), role, content))
-
-    connection.commit()
-
-def log_function_call(call_id: str, name: str, args: str, file_path: str = DB):
-    connection = sqlite3.connect(DB)
-    cursor = connection.cursor()
-
-    cursor.execute('''
-        INSERT INTO function_calls (time, call_id, name, args)
-        VALUES (?, ?, ?, ?)
-    ''', (make_timestamp(), call_id, name, args))
-
-    connection.commit()
+        .strftime('%b %-d %Y at %-I:%M %p %Z')
 
 # functions
-def memory_add(content: str, tags: list[str], file_path: str = DB) -> str:
+def store_memory(content: str, tags: set[str]) -> str:
     connection = sqlite3.connect(DB)
     cursor = connection.cursor()
 
     cursor.execute('''
-        INSERT INTO memory (time, content)
+        INSERT INTO memories (time, content)
         VALUES (?, ?)
     ''', (make_timestamp(), content))
 
@@ -91,93 +58,119 @@ def memory_add(content: str, tags: list[str], file_path: str = DB) -> str:
 
     return 'success'
 
-def memory_read(tags: list[str], file_path: str = DB) -> str:
+def retrieve_memories(tags: set[str]) -> str:
     connection = sqlite3.connect(DB)
     cursor = connection.cursor()
 
-    result = cursor.execute('''
-        SELECT m.id, m.time, m.content
-        FROM memory m
-        WHERE EXISTS (
-            SELECT 1
-            FROM memory_tags mt
-            WHERE m.id = mt.memory_id AND mt.tag IN (''' + \
-            ','.join('?' * len(tags)) + ''')
-        )
-    ''', tags)
+    result = cursor.execute(f'''
+        SELECT
+            m.id,
+            m.time,
+            m.content,
+            GROUP_CONCAT(mt.tag) AS tags
+        FROM memories m
+        JOIN memory_tags mt ON m.id = mt.memory_id
+        WHERE mt.tag IN (''' +  ','.join('?' * len(tags)) + ''')
+        GROUP BY m.id
+        HAVING COUNT(DISTINCT mt.tag) = ?
+        ORDER BY m.id DESC
+    ''', [*tags, len(tags)])
     rows = result.fetchall()
 
     memories = [{'id': r[0], 'time': r[1], 'content': r[2]} for r in rows]
 
     return json.dumps(memories)
 
+def list_memory_tags() -> str:
+    connection = sqlite3.connect(DB)
+    cursor = connection.cursor()
+
+    result = cursor.execute(f'''
+        SELECT DISTINCT mt.tag
+        FROM memory_tags mt
+        JOIN memories m ON mt.memory_id = m.id
+        ORDER BY m.id DESC
+    ''')
+    rows = result.fetchall()
+
+    return json.dumps(rows)
+
+# private
+def call_function(
+    call_id: str,
+    function_name: str,
+    function_arguments: str
+) -> str:
+    # log it
+    connection = sqlite3.connect(DB)
+    cursor = connection.cursor()
+
+    cursor.execute('''
+        INSERT INTO function_calls (time,
+                                    call_id,
+                                    function_name,
+                                    function_arguments)
+        VALUES (?, ?, ?, ?)
+    ''', (make_timestamp(), call_id, function_name, function_arguments))
+
+    connection.commit()
+
+    # return function output
+    args = json.loads(function_arguments)
+
+    match function_name:
+        case 'store_memory':
+            return store_memory(args['content'], set(args['tags']))
+        case 'retrieve_memories':
+            return retrieve_memory(set(args['tags']))
+        case 'list_memory_tags':
+            return list_memory_tags()
+
+    return f'failure: {function_name} is not a function'
+
+def save_output(content: str):
+    connection = sqlite3.connect(DB)
+    cursor = connection.cursor()
+
+    cursor.execute('''
+        INSERT INTO outputs (time, content)
+        VALUES (?, ?)
+    ''', (make_timestamp(), content))
+
+    connection.commit()
+
 if __name__ == '__main__':
+    with open('tools.json') as f: tools = json.load(f)
+    context = [{'role': 'developer', 'content': INSTRUCTIONS}]
+
     client = OpenAI()
+    is_response_needed = True
 
-    with open('tools.json') as f:
-        tools = json.load(f)
+    while is_response_needed:
+        response = client.responses.create(
+            model=MODEL,
+            tools=tools,
+            input=history
+        )
 
-    history = [
-        {'role': 'developer', 'content': INSTRUCTIONS},
-        *fetch_history()
-    ]
-
-    response = client.responses.create(
-        model=MODEL,
-        # reasoning=REASONING,
-        # max_output_tokens=MAX_OUTPUT_TOKENS,
-        tools=tools,
-        input=history
-    )
-
-    function_calls = 0
-    while function_calls < FUNCTION_CALL_LIMIT:
-        response_had_function_call = False
+        is_response_needed = False
 
         for tool_call in response.output:
-            if function_calls == FUNCTION_CALL_LIMIT:
-                break
-
             if tool_call.type != "function_call":
                 continue
 
-            log_function_call(
-                tool_call.call_id,
-                tool_call.name,
-                tool_call.arguments
-            )
-
-            history.append(tool_call)
-
-            result = ''
-            args = json.loads(tool_call.arguments)
-
-            match tool_call.name:
-                case 'memory_add':
-                    result = memory_add(args['content'], args['tags'])
-                case 'memory_read':
-                    result = memory_read(args['tags'])
-
-            history.append({
+            context.append(tool_call)
+            context.append({
                 'type': 'function_call_output',
                 'call_id': tool_call.call_id,
-                'output': result
+                'output': call_function(
+                    tool_call.call_id,
+                    tool_call.name,
+                    tool_call.arguments
+                )
             })
 
-            response = client.responses.create(
-                model=MODEL,
-                # reasoning=REASONING,
-                # max_output_tokens=MAX_OUTPUT_TOKENS,
-                tools=tools,
-                input=history
-            )
+            is_response_needed = True
 
-            function_calls += 1
-            response_had_function_call = True
-
-        if not response_had_function_call:
-            break
-
+    save_output(response.output_text)
     print(response.output_text)
-
-    append_history('assistant', response.output_text)
