@@ -6,7 +6,7 @@ from openai import OpenAI
 
 # constants
 DB = 'db.sqlite'
-MODEL = 'gpt-4o'
+MODEL = 'gpt-4o-mini'
 FUNCTION_CALL_LIMIT = 10
 
 # util
@@ -145,7 +145,7 @@ def call_function(
         case 'store_memory':
             result = store_memory(args['content'], set(args['tags']))
         case 'retrieve_memories':
-            result = retrieve_memories(set(args['tags']))
+            result = retrieve_memories(set(args['tags']), args['match_on'])
         case 'list_memory_tags':
             result = list_memory_tags()
         case _:

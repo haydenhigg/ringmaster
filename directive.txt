@@ -33,6 +33,3 @@ You may store a memory with the tag "meta:next" if you want that memory to be pr
 [NEXT STEPS]
 The latest memory with the tag "meta:next" is:
 {}
-
-[DEVELOPER GUIDANCE]
-Your `retrieve_memories` function has been updated to include a `match_on` parameter so you can search more tags with fewer function calls. Let me know how it works.
