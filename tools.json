@@ -55,6 +55,8 @@
         "description": "List all distinct tags in your knowledge database, ordered from most recently used to least recently used",
         "strict": true,
         "parameters": {
+            "type": "object",
+            "properties": {},
             "additionalProperties": false
         }
     }
