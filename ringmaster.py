@@ -7,7 +7,7 @@ from openai import OpenAI
 # constants
 DB = 'db.sqlite'
 MODEL = 'gpt-4o'
-FUNCTION_CALL_LIMIT = 5
+FUNCTION_CALL_LIMIT = 10
 
 # util
 def make_timestamp() -> str:
@@ -95,16 +95,21 @@ def call_function(
 
     # return function output
     args = json.loads(function_arguments)
+    result = None
 
     match function_name:
         case 'store_memory':
-            return store_memory(args['content'], set(args['tags']))
+            result = store_memory(args['content'], set(args['tags']))
         case 'retrieve_memories':
-            return retrieve_memories(set(args['tags']))
+            result = retrieve_memories(set(args['tags']))
         case 'list_memory_tags':
-            return list_memory_tags()
+            result = list_memory_tags()
+        case _:
+            result = f'failure: {function_name} is not a function'
 
-    return f'failure: {function_name} is not a function'
+    print(f'{function_name}({args}) = {result}')
+
+    return result
 
 def save_output(content: str):
     connection = sqlite3.connect(DB)
