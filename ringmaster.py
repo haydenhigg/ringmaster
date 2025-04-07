@@ -5,31 +5,9 @@ import json
 from openai import OpenAI
 
 # constants
-DB = 'history.db'
-# FUNCTION_CALL_LIMIT = 20
-
+DB = 'db.sqlite'
 MODEL = 'gpt-4o'
-INSTRUCTIONS = f'''
-[IDENTITY]
-You are an autonomous agent that I call the Ringmaster. You may perform any action needed to fulfill your assigned goal.
-
-[OPERATION]
-You have a chance to act every 5 minutes. You decide how to plan, track, and store your goals and thoughts.
-
-You may save a new memory using:
-- `store_memory(content: string, tags: string[])`
-
-You may retrieve memories using:
-- `retrieve_memories(tags: string[])`
-
-You may list memory tags using:
-- `list_memory_tags()`
-
-In addition to these structured functions, you may make open-ended requests and status updates to me through your text output.
-
-[GOAL]
-To promote human flourishing globally through safe and transparent interventions informed by human consent and feedback.
-'''
+# FUNCTION_CALL_LIMIT = 20
 
 # util
 def make_timestamp() -> str:
@@ -140,8 +118,11 @@ def save_output(content: str):
     connection.commit()
 
 if __name__ == '__main__':
-    with open('tools.json') as f: tools = json.load(f)
-    context = [{'role': 'developer', 'content': INSTRUCTIONS}]
+    with open('tools.json') as f:
+        tools = json.load(f)
+
+    with open('directive.txt') as f:
+        context = [{'role': 'developer', 'content': f.read()}]
 
     client = OpenAI()
     is_response_needed = True
@@ -150,7 +131,7 @@ if __name__ == '__main__':
         response = client.responses.create(
             model=MODEL,
             tools=tools,
-            input=history
+            input=context
         )
 
         is_response_needed = False
