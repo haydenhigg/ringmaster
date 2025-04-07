@@ -8,6 +8,7 @@ from openai import OpenAI
 DB = 'db.sqlite'
 MODEL = 'gpt-4o'
 FUNCTION_CALL_LIMIT = 10
+TEXT_OUTPUT_LIMIT = 2
 
 # util
 def make_timestamp() -> str:
@@ -180,6 +181,7 @@ if __name__ == '__main__':
 
     is_response_needed = True
     num_function_calls = 0
+    num_text_outputs = 0
 
     while is_response_needed and num_function_calls <= FUNCTION_CALL_LIMIT:
         response = client.responses.create(
@@ -191,10 +193,8 @@ if __name__ == '__main__':
         is_response_needed = False
 
         for tool_call in response.output:
-            if num_function_calls >= FUNCTION_CALL_LIMIT:
-                break
-
-            if tool_call.type != "function_call":
+            if tool_call.type != "function_call" or \
+               num_function_calls >= FUNCTION_CALL_LIMIT:
                 continue
 
             context.append(tool_call)
@@ -210,6 +210,16 @@ if __name__ == '__main__':
 
             is_response_needed = True
             num_function_calls += 1
+
+        if not is_response_needed:
+            num_text_outputs += 1
+
+        if not is_response_needed and num_text_outputs < TEXT_OUTPUT_LIMIT:
+            context.append({
+                'role': 'assistant',
+                'content': response.output_text
+            })
+            is_response_needed = True
 
     save_output(response.output_text)
     print(response.output_text)
