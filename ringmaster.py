@@ -74,6 +74,24 @@ def list_memory_tags() -> str:
     return json.dumps([r[0] for r in rows])
 
 # private
+def get_next_steps(tag: str) -> str:
+    connection = sqlite3.connect(DB)
+    cursor = connection.cursor()
+
+    result = cursor.execute(f'''
+        SELECT m.content
+        FROM memories m
+        WHERE EXISTS (
+            SELECT *
+            FROM memory_tags mt
+            WHERE mt.memory_id = m.id AND mt.tag = ?
+        )
+        ORDER BY m.id DESC
+        LIMIT 1
+    ''', (tag,))
+
+    return (result.fetchone() or ('[no memory]',))[0]
+
 def call_function(
     call_id: str,
     function_name: str,
@@ -127,7 +145,10 @@ if __name__ == '__main__':
         tools = json.load(f)
 
     with open('directive.txt') as f:
-        context = [{'role': 'developer', 'content': f.read()}]
+        context = [{
+            'role': 'developer',
+            'content': f.read().format(get_next_steps('meta:next'))
+        }]
 
     client = OpenAI()
 
