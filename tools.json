@@ -54,6 +54,8 @@
         "name": "list_memory_tags",
         "description": "List all distinct tags in your knowledge database, ordered from most recently used to least recently used",
         "strict": true,
-        "parameters": {}
+        "parameters": {
+            "additionalProperties": false
+        }
     }
 ]
