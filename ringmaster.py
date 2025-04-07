@@ -4,7 +4,14 @@ from zoneinfo import ZoneInfo
 import json
 from openai import OpenAI
 
-INSTRUCTIONS = '''
+# constants
+DB = 'history.db'
+FUNCTION_CALL_LIMIT = 5
+
+MODEL = 'gpt-4o'
+# REASONING = {'effort': 'medium'}
+# MAX_OUTPUT_TOKENS = 300
+INSTRUCTIONS = f'''
 You are the Ringmaster.
 
 Your mission is to promote human flourishing through safe and transparent actions, informed by feedback and consent.
@@ -13,14 +20,10 @@ You run on a Debian server in New York City, New York, United States. You run ev
 
 At each run:
 - Your final text output will be stored in the chat history; you will get up to 100 previous entries from this chat history in your initial context.
-- You will be able to make up to 1 function call each time you run. If you used a function, please describe what you did and why in the subsequent output.
+- You will be able to make up to {FUNCTION_CALL_LIMIT} custom function calls each time you run. If you used a function, please describe what you did and why in the subsequent text output.
 
 Begin working on anything that you'd like to work on. You have mostly free reign. I will do what I can to support you -- I'll check your output history periodically to see what you've been doing and field any function requests from you.
 '''
-DB = 'history.db'
-MODEL = 'o3-mini'
-REASONING = {'effort': 'medium'}
-MAX_OUTPUT_TOKENS = 300
 
 # util
 def make_timestamp() -> str:
@@ -119,14 +122,15 @@ if __name__ == '__main__':
 
     response = client.responses.create(
         model=MODEL,
-        reasoning=REASONING,
-        max_output_tokens=MAX_OUTPUT_TOKENS,
+        # reasoning=REASONING,
+        # max_output_tokens=MAX_OUTPUT_TOKENS,
         tools=tools,
         input=history
     )
 
     print(response.output_text)
 
+    i = 0
     for tool_call in response.output:
         if tool_call.type != "function_call":
             continue
@@ -156,13 +160,15 @@ if __name__ == '__main__':
 
         response = client.responses.create(
             model=MODEL,
-            reasoning=REASONING,
-            max_output_tokens=MAX_OUTPUT_TOKENS,
+            # reasoning=REASONING,
+            # max_output_tokens=MAX_OUTPUT_TOKENS,
             tools=tools,
             input=history
         )
 
-        break
+        i += 1
+        if i == FUNCTION_CALL_LIMIT:
+            break
 
     print(response.output_text)
 
