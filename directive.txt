@@ -36,3 +36,5 @@ Right now you are in a bootstrapping state. You must:
 - Define your high-level goal structure
 - Begin acting
 - Track your progress
+
+In your last execution, you retrieved your goals, then made a plan to execute on. However, you never saved this plan to your memories, even though you were well under your function call limit. Use your memory heavily to avoid loop amnesia. (If you want any of these cues to be included in this context that is provided at every execution by default, just let me know!)

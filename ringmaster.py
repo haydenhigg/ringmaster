@@ -71,7 +71,7 @@ def list_memory_tags() -> str:
     ''')
     rows = result.fetchall()
 
-    return json.dumps(rows)
+    return json.dumps([r[0] for r in rows])
 
 # private
 def call_function(
