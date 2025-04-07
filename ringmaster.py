@@ -7,7 +7,7 @@ from openai import OpenAI
 # constants
 DB = 'db.sqlite'
 MODEL = 'gpt-4o-mini'
-# FUNCTION_CALL_LIMIT = 20
+FUNCTION_CALL_LIMIT = 5
 
 # util
 def make_timestamp() -> str:
@@ -125,9 +125,11 @@ if __name__ == '__main__':
         context = [{'role': 'developer', 'content': f.read()}]
 
     client = OpenAI()
-    is_response_needed = True
 
-    while is_response_needed:
+    is_response_needed = True
+    num_function_calls = 0
+
+    while is_response_needed and num_function_calls <= FUNCTION_CALL_LIMIT:
         response = client.responses.create(
             model=MODEL,
             tools=tools,
@@ -152,6 +154,10 @@ if __name__ == '__main__':
             })
 
             is_response_needed = True
+            num_function_calls += 1
+
+            if num_function_calls >= FUNCTION_CALL_LIMIT:
+                break
 
     save_output(response.output_text)
     print(response.output_text)
