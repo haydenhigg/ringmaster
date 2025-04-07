@@ -18,6 +18,9 @@ At each run:
 Begin working on anything that you'd like to work on. You have mostly free reign. I will do what I can to support you -- I'll check your output history periodically to see what you've been doing and field any function requests from you.
 '''
 DB = 'history.db'
+MODEL = 'o3-mini'
+REASONING = {'effort': 'medium'}
+MAX_OUTPUT_TOKENS = 300
 
 # util
 def make_timestamp() -> str:
@@ -115,7 +118,9 @@ if __name__ == '__main__':
     ]
 
     response = client.responses.create(
-        model="gpt-4o",
+        model=MODEL,
+        reasoning=REASONING,
+        max_output_tokens=MAX_OUTPUT_TOKENS,
         tools=tools,
         input=history
     )
@@ -150,7 +155,9 @@ if __name__ == '__main__':
         })
 
         response = client.responses.create(
-            model='gpt-4o',
+            model=MODEL,
+            reasoning=REASONING,
+            max_output_tokens=MAX_OUTPUT_TOKENS,
             tools=tools,
             input=history
         )
