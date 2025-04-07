@@ -128,44 +128,52 @@ if __name__ == '__main__':
         input=history
     )
 
-    i = 0
-    for tool_call in response.output:
-        if tool_call.type != "function_call":
-            continue
+    function_calls = 0
+    while function_calls < FUNCTION_CALL_LIMIT:
+        response_had_function_call = False
 
-        log_function_call(
-            tool_call.call_id,
-            tool_call.name,
-            tool_call.arguments
-        )
+        for tool_call in response.output:
+            if function_calls == FUNCTION_CALL_LIMIT:
+                break
 
-        history.append(tool_call)
+            if tool_call.type != "function_call":
+                continue
 
-        result = ''
-        args = json.loads(tool_call.arguments)
+            log_function_call(
+                tool_call.call_id,
+                tool_call.name,
+                tool_call.arguments
+            )
 
-        match tool_call.name:
-            case 'memory_add':
-                result = memory_add(args['content'], args['tags'])
-            case 'memory_read':
-                result = memory_read(args['tags'])
+            history.append(tool_call)
 
-        history.append({
-            'type': 'function_call_output',
-            'call_id': tool_call.call_id,
-            'output': result
-        })
+            result = ''
+            args = json.loads(tool_call.arguments)
 
-        response = client.responses.create(
-            model=MODEL,
-            # reasoning=REASONING,
-            # max_output_tokens=MAX_OUTPUT_TOKENS,
-            tools=tools,
-            input=history
-        )
+            match tool_call.name:
+                case 'memory_add':
+                    result = memory_add(args['content'], args['tags'])
+                case 'memory_read':
+                    result = memory_read(args['tags'])
 
-        i += 1
-        if i == FUNCTION_CALL_LIMIT:
+            history.append({
+                'type': 'function_call_output',
+                'call_id': tool_call.call_id,
+                'output': result
+            })
+
+            response = client.responses.create(
+                model=MODEL,
+                # reasoning=REASONING,
+                # max_output_tokens=MAX_OUTPUT_TOKENS,
+                tools=tools,
+                input=history
+            )
+
+            function_calls += 1
+            response_had_function_call = True
+
+        if not response_had_function_call:
             break
 
     print(response.output_text)
