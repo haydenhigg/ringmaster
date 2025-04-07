@@ -3,7 +3,7 @@
     {
         "type": "function",
         "name": "store_memory",
-        "description": "Store a memory in your knowledge database and associate it with an arbitrary number of custom tags for later retrieval",
+        "description": "Store a memory in your knowledge database and associate it with an arbitrary number of custom tags for later retrieval. If a tag does not already exist, it will be created.",
         "strict": true,
         "parameters": {
             "type": "object",
@@ -30,7 +30,7 @@
     {
         "type": "function",
         "name": "retrieve_memory",
-        "description": "Retrieve every memory in your knowledge database that is associated with all of the provided tags, ordered from newest to oldest",
+        "description": "Retrieve every memory in your knowledge database that is associated with all of the provided tags, ordered from newest to oldest.",
         "strict": true,
         "parameters": {
             "type": "object",
@@ -52,7 +52,7 @@
     {
         "type": "function",
         "name": "list_memory_tags",
-        "description": "List all distinct tags in your knowledge database, ordered from most recently used to least recently used",
+        "description": "List all distinct tags in your knowledge database, ordered from most recently used to least recently used.",
         "strict": true,
         "parameters": {
             "type": "object",
