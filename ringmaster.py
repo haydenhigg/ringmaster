@@ -6,7 +6,7 @@ from openai import OpenAI
 
 # constants
 DB = 'db.sqlite'
-MODEL = 'gpt-4o-mini'
+MODEL = 'gpt-4o'
 FUNCTION_CALL_LIMIT = 5
 
 # util
@@ -139,6 +139,9 @@ if __name__ == '__main__':
         is_response_needed = False
 
         for tool_call in response.output:
+            if num_function_calls >= FUNCTION_CALL_LIMIT:
+                break
+
             if tool_call.type != "function_call":
                 continue
 
@@ -155,9 +158,6 @@ if __name__ == '__main__':
 
             is_response_needed = True
             num_function_calls += 1
-
-            if num_function_calls >= FUNCTION_CALL_LIMIT:
-                break
 
     save_output(response.output_text)
     print(response.output_text)
